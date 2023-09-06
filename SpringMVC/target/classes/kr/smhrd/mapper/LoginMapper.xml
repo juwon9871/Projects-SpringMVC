@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- namespace에는 패키지명 + 메퍼 파일명까지  -->
+<mapper namespace="kr.smhrd.mapper.LoginMapper">
+	
+	<select id="login" parameterType="kr.smhrd.entity.Member" resultType="kr.smhrd.entity.Member">
+		select * from member where username=#{username} and password=#{password}
+	</select>
+	
+</mapper>

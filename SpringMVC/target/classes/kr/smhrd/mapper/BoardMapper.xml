@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- namespace에는 패키지명 + 메퍼 파일명까지  -->
+<mapper namespace="kr.smhrd.mapper.BoardMapper">
+	
+	<sql id="search">
+		<if test="type == 'writer'">
+			where writer like concat('%', #{keyword}, '%')
+		</if>
+		<if test="type == 'title'">
+			where title like concat('%', #{keyword}, '%')
+		</if>
+		<if test="type == 'content'">
+			where content like concat('%', #{keyword}, '%')
+		</if>
+	</sql>
+	
+	<select id="boardList" resultType="kr.smhrd.entity.Board" parameterType="kr.smhrd.entity.Criteria">
+		select * from reply 
+		<include refid="search"/>
+		order by bgroup desc, bseq asc
+		limit #{pageStart}, #{perPageNum}
+	</select>
+	
+	<select id="boardGet" parameterType="int" resultType="kr.smhrd.entity.Board"> 
+		select * from reply where num=#{num}
+	</select>
+
+	<select id="totalCount" parameterType="kr.smhrd.entity.Criteria" resultType="int">
+		select count(*) from reply
+		<include refid="search"/>
+	</select>
+
+	<!-- 원글을 입력할 때 -->
+	<insert id="boardInsert" parameterType="kr.smhrd.entity.Board">
+		<selectKey keyProperty="bgroup" resultType="kr.smhrd.entity.Board" order="BEFORE">
+			select IFNULL(max(bgroup)+1, 0) as bgroup from reply;
+		</selectKey>
+		insert into reply(username, title, content, writer, bgroup, bseq, blevel) 
+		values(#{username}, #{title}, #{content}, #{writer}, #{bgroup}, 0, 0)
+	</insert>
+	
+	<!-- 답글을 입력할 때 -->
+	<insert id="replyInsert" parameterType="kr.smhrd.entity.Board">
+		insert into reply(username, title, content, writer, bgroup, bseq, blevel) 
+		values(#{username}, #{title}, #{content}, #{writer}, #{bgroup}, #{bseq}, #{blevel})
+	</insert>
+	
+	<update id="replySeqUpdate" parameterType="kr.smhrd.entity.Board">
+		update reply set bseq=bseq+1 where bgroup=#{bgroup} and bseq > #{bseq}
+	</update>
+	
+	<update id="boardModify" parameterType="kr.smhrd.entity.Board">
+		update reply set title=#{title}, content=#{content} where num=#{num}
+	</update>
+	
+</mapper>
